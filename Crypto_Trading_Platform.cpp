@@ -1,37 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
-enum class OrderBookType { bid, ask };
-
-class OrderBookEntry
-{
-public:
-    OrderBookEntry(double price,
-                   double amount,
-                   std::string timestamp,
-                   std::string product,
-                   OrderBookType orderType)
-    : price(price),
-      amount(amount),
-      timestamp(timestamp),
-      product(product),
-      orderType(orderType)
-    {
-        //this->price = price;
-        //this->amount = amount;
-        //this->timestamp = timestamp;
-        //this->product = product;
-        //this->orderType = orderType;
-    }
-
-    double price;
-    double amount;
-    std::string timestamp;
-    std::string product;
-    OrderBookType orderType;
-};
-
+#include "OrderBookEntry.h"
 
 void printMenu()
 {
@@ -119,29 +89,61 @@ void processUserOption(int userOption)
     }
 }
 
+
+double computeAveragePrice(std::vector<OrderBookEntry>& entries)
+{
+    double sum = 0;
+    for (OrderBookEntry& order : entries)
+    {
+        sum = order.price + sum;
+    }
+    return sum / entries.size();
+}
+
+double computeLowPrice(std::vector<OrderBookEntry>& entries)
+{
+    double LowPrice = entries[0].price;
+    for (OrderBookEntry& order : entries)
+    {
+        if (order.price < LowPrice)
+        {
+            LowPrice = order.price;
+        }
+        else
+        {
+            LowPrice = LowPrice;
+        }
+    }
+    return LowPrice;
+}
+
+double computeHighPrice(std::vector<OrderBookEntry>& entries)
+{
+    double highPrice = entries[0].price;
+    for (OrderBookEntry& order : entries)
+    {
+        if (order.price > highPrice)
+        {
+            highPrice = order.price;
+        }
+        else
+        {
+            highPrice = highPrice;
+        }
+    }
+    return highPrice;
+    return 0;
+}
+
+double computePriceSpread(std::vector<OrderBookEntry>& entries)
+{
+    double PriceSpread = computeHighPrice(entries) - computeLowPrice(entries);
+    return PriceSpread;
+}
+
 int main()
 {
-    
-
-    //double price = 5319.450228;
-    //double amount = 0.00020075;
-    //std::string timestamp{ "2020/03/17 17:01:24.884492" };
-    //std::string product{ "BTC/UTC" };
-    //OrderBookType orderType = OrderBookType::bid;
-
-    std::vector<double> prices;
-    std::vector<double> amounts;
-    std::vector<std::string> timestamps;
-    std::vector<std::string> products;
-    std::vector<OrderBookType> orderType;
-
-    prices.push_back(5319.450228);
-    amounts.push_back(0.00020075);
-    timestamps.push_back("2020/03/17 17:01:24.884492");
-    products.push_back("BTC/UTC");
-    orderType.push_back(OrderBookType::bid);
-
-    while (false)
+    while (false) //we don't need this for now.
     {
         printMenu();
         int userOption = getUserOption();
@@ -150,26 +152,7 @@ int main()
 
     std::vector<OrderBookEntry> orders;
 
-
-    OrderBookEntry order1(1000, 
-                        0.02, 
-                        "2020/03/17 17:01:24.884492", 
-                        "BTC/UTC", 
-                        OrderBookType::bid);
-
-    OrderBookEntry order2(3000,
-                        0.02,
-                        "2020/03/17 17:01:24.884492",
-                        "BTC/UTC",
-                        OrderBookType::bid);
-
-    //order1.price = 100000;
-    //order1.amount = 0.02;
-    //order1.timestamp = "2020/03/17 17:01:24.884492";
-    //order1.product = "BTC/UTC";
-    //order1.orderType = OrderBookType::bid;
-
-    orders.push_back(OrderBookEntry(1000,
+    orders.push_back(OrderBookEntry(2000,
                                     0.02,
                                     "2020/03/17 17:01:24.884492",
                                     "BTC/UTC",
@@ -179,19 +162,35 @@ int main()
                                     "2020/03/17 17:01:24.884492",
                                     "BTC/UTC",
                                     OrderBookType::bid));
+    orders.push_back(OrderBookEntry(8000,
+                                    0.02,
+                                    "2020/03/17 17:01:24.884492",
+                                    "BTC/UTC",
+                                    OrderBookType::bid));
+    orders.push_back(OrderBookEntry(1800,
+                                    0.02,
+                                    "2020/03/17 17:01:24.884492",
+                                    "BTC/UTC",
+                                    OrderBookType::bid));
+    orders.push_back(OrderBookEntry(10000,
+                                    0.02,
+                                    "2020/03/17 17:01:24.884492",
+                                    "BTC/UTC",
+                                    OrderBookType::bid));
 
-    std::cout << "The price is " << orders[1].price << std::endl;
-    
-    for (OrderBookEntry& order : orders)
+    for (unsigned int i = 0; i < orders.size(); ++i)
     {
-        std::cout << "The price is " << order.price << std::endl;
+        std::cout << "The price " << i + 1 << " = " << orders[i].price << std::endl;
     }
 
-    for (unsigned int i = 0; i < orders.size() ; ++i)
-    {
-        std::cout << "The price is " << orders[i].price << std::endl;
-    }
-
+    double AveragePrice = computeAveragePrice(orders);
+    std::cout << "AveragePrice = " << AveragePrice << std::endl;
+    double LowPrice = computeLowPrice(orders);
+    std::cout << "LowPrice = " << LowPrice << std::endl;
+    double HighPrice = computeHighPrice(orders);
+    std::cout << "HighPrice = " << HighPrice << std::endl;
+    double PriceSpread = computePriceSpread(orders);
+    std::cout << "PriceSpread = " << PriceSpread << std::endl;
     return 0;
 }
 
