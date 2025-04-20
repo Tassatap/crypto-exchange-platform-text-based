@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "OrderBookEntry.h"
+#include "CSVReader.h"
 
 MerkelMain::MerkelMain()
 {
@@ -11,28 +12,13 @@ MerkelMain::MerkelMain()
 void MerkelMain::init()
 {
     int input;
+    currentTime = orderBook.getEarliestTime();
     while (true)
     {
-        loadOrderbook();
         printMenu();
         input = getUserOption();
         processUserOption(input);
     }
-}
-
-void MerkelMain::loadOrderbook()
-{
-    orders.push_back(OrderBookEntry(2000,
-                                    0.02,
-                                    "2020/03/17 17:01:24.884492",
-                                    "BTC/UTC",
-                                    OrderBookType::bid));
-    orders.push_back(OrderBookEntry(3000,
-                                    0.02,
-                                    "2020/03/17 17:01:24.884492",
-                                    "BTC/UTC",
-                                    OrderBookType::bid));
-
 }
 
 void MerkelMain::printMenu()
@@ -42,15 +28,17 @@ void MerkelMain::printMenu()
     // 2 print exchange stats 
     std::cout << "2: Print exchange stats " << std::endl;
     // 3 make an offer 
-    std::cout << "3: Make an offer  " << std::endl;
+    std::cout << "3: Make an ask  " << std::endl;
     // 4 make a bid 
     std::cout << "4: Make a bid  " << std::endl;
     // 5 print wallet 
     std::cout << "5: Print wallet " << std::endl;
     // 6 continue
     std::cout << "6: Continue " << std::endl;
+
     std::cout << "===============================  " << std::endl;
-    std::cout << "Please enter an option(1 - 6) : " << std::endl;
+
+    std::cout << "Current Time : " << currentTime << std::endl;
 }
 
 void MerkelMain::printHelp()
@@ -62,15 +50,87 @@ void MerkelMain::printHelp()
 
 void MerkelMain::printMarketStats()
 {
-    std::cout << "OrderBook contains : " << orders.size() << " entries" << std::endl;
+    for (std::string const& p : orderBook.getKnowProducts())
+    {
+        std::cout << "Product: " << p << std::endl;
+        std::vector<OrderBookEntry> entriesAsk = orderBook.getOrders(OrderBookType::ask,
+                                                                    p, currentTime);
+        std::cout << "Asks seen: " << entriesAsk.size() << std::endl;
+        std::cout << "Max asks: " << OrderBook::getHighPrice(entriesAsk) << std::endl;
+        std::cout << "Min asks: " << OrderBook::getLowPrice(entriesAsk) << std::endl;
+        std::cout << "VWAP: " << OrderBook::getVWAP(entriesAsk) << std::endl;
+
+        std::vector<OrderBookEntry> entriesBid = orderBook.getOrders(OrderBookType::bid,
+            p, currentTime);
+        std::cout << "Bids seen: " << entriesBid.size() << std::endl;
+        std::cout << "Max Bids: " << OrderBook::getHighPrice(entriesBid) << std::endl;
+        std::cout << "Min Bids: " << OrderBook::getLowPrice(entriesBid) << std::endl;
+        std::cout << "VWAP: " << OrderBook::getVWAP(entriesBid) << std::endl;
+    }
 }
-void MerkelMain::enterOffer()
+
+void MerkelMain::enterAsk()
 {
-    std::cout << "Make an offer - enter the amount" << std::endl;
+    std::cout << "Make an ask - enter the amount: product,price,amount eg ETH/BTC,200,0.5" << std::endl;
+    std::string input;
+    std::getline(std::cin, input);
+
+    std::vector<std::string> tokens = CSVReader::tokenise(input, ',');
+    if (tokens.size() != 3)
+    {
+        std::cout << "MerkelMain::enterAsk Bad input!" << input << std::endl;
+    }
+    else {
+        try {
+            OrderBookEntry obe = CSVReader::stringsToOBE(
+                tokens[1],
+                tokens[2],
+                currentTime,
+                tokens[0],
+                OrderBookType::ask
+            );
+            orderBook.insertOrder(obe);
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << "MerkelMain::enterAsk Bad input " << std::endl;
+        }
+    }
+
+
+    std::cout << "You typed: " << input << std::endl;
 }
 void MerkelMain::enterBid()
 {
-    std::cout << "Make a bid - enter the amount" << std::endl;
+    std::cout << "Make a bid - enter the amount: product,price,amount eg ETH/BTC,200,0.5" << std::endl;
+    std::string input;
+    std::getline(std::cin, input);
+
+    std::vector<std::string> tokens = CSVReader::tokenise(input, ',');
+    if (tokens.size() != 3)
+    {
+        std::cout << "MerkelMain::enterBid Bad input!" << input << std::endl;
+    }
+    else {
+        try {
+            OrderBookEntry obe = CSVReader::stringsToOBE(
+                tokens[1],
+                tokens[2],
+                currentTime,
+                tokens[0],
+                OrderBookType::bid
+            );
+            orderBook.insertOrder(obe);
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << "MerkelMain::enterBid Bad input " << std::endl;
+        }
+
+
+
+        std::cout << "You typed: " << input << std::endl;
+    }
 }
 void MerkelMain::printWallet()
 {
@@ -79,11 +139,29 @@ void MerkelMain::printWallet()
 void MerkelMain::gotoNextTimeFrame()
 {
     std::cout << "Going to next tiem frame" << std::endl;
+    std::vector<OrderBookEntry> sales = orderBook.matchAsksToBids("ETH/BTC", currentTime);
+    currentTime = orderBook.getNextTime(currentTime);
+    std::cout << "Sales: " << sales.size() << std::endl;
+    for (OrderBookEntry& sale : sales)
+    {
+        std::cout << "Sales amount: " << sale.price << " amount " << sale.amount << std::endl;
+    }
 }
+
 int MerkelMain::getUserOption()
 {
-    int userOption;
-    std::cin >> userOption;
+    int userOption = 0;
+    std::string line;
+    std::cout << "Please enter an option(1 - 6) : " << std::endl;
+    std::getline(std::cin, line);
+    try {
+        userOption = std::stoi(line);
+    }
+    catch (const std::exception& e)
+    {
+
+    }
+
     std::cout << "You chose: " << userOption << std::endl;
     return userOption;
 }
@@ -104,7 +182,7 @@ void MerkelMain::processUserOption(int userOption)
     }
     if (userOption == 3)
     {
-        enterOffer();
+        enterAsk();
     }
     if (userOption == 4)
     {

@@ -1,15 +1,16 @@
 #pragma once
+
 #include <vector>
 #include "OrderBookEntry.h"
+#include "OrderBook.h"
 
 class MerkelMain
 {
 private:
-    void loadOrderbook();
     void printMenu();
     void printHelp();
     void printMarketStats();
-    void enterOffer();
+    void enterAsk();
     void enterBid();
     void printWallet();
     void gotoNextTimeFrame();
@@ -19,8 +20,10 @@ private:
     double computeLowPrice(std::vector<OrderBookEntry>& entries);
     double computeHighPrice(std::vector<OrderBookEntry>& entries);
     double computePriceSpread(std::vector<OrderBookEntry>& entries);
-    std::vector<OrderBookEntry> orders;
 
+    std::string currentTime;
+
+    OrderBook orderBook{"Crypto_trading_data.csv"};
 public:
 	MerkelMain();
     /** Call this to start the sim*/

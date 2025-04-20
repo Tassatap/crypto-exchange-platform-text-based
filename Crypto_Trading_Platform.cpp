@@ -7,8 +7,8 @@
 
 int main()
 {
-    //MerkelMain app{};
-    //app.init();
-    CSVReader::readCSV("Crypto_trading_data.csv");
+    MerkelMain app{};
+    app.init();
+    //CSVReader::readCSV("Crypto_trading_data.csv");
 }
 
