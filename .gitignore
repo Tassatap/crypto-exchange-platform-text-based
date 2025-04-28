@@ -1,0 +1,14 @@
+.vscode/
+*.user
+bin/
+x64/
+*.exe
+*.obj
+*.pdb
+*.ipch
+*.aps
+*.ncb
+*.suo
+*.cache
+*.ilk
+*.log
