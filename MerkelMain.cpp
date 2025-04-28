@@ -15,7 +15,7 @@ void MerkelMain::init()
     int input;
     currentTime = orderBook.getEarliestTime();
 
-    //wallet.insertCurrency("BTC", 10);
+    wallet.insertCurrency("USDT", 100);
 
     while (true)
     {
@@ -49,7 +49,8 @@ void MerkelMain::printHelp()
 {
     std::cout << "Help - your aim is to make money." << std::endl;
     std::cout << "Analyse the market and make bids" << std::endl;
-    std::cout << "and offers. " << std::endl;
+    std::cout << "and offers with and offers " << std::endl;
+    std::cout << "You have starting balance of 100 USDT. " << std::endl;
 }
 
 void MerkelMain::printMarketStats()
@@ -82,7 +83,7 @@ void MerkelMain::enterAsk()
     std::vector<std::string> tokens = CSVReader::tokenise(input, ',');
     if (tokens.size() != 3)
     {
-        std::cout << "MerkelMain::enterAsk Bad input!" << input << std::endl;
+        std::cout << "MerkelMain::enterAsk Bad input! " << input << std::endl;
     }
     else {
         try {
@@ -163,7 +164,7 @@ void MerkelMain::printWallet()
 }
 void MerkelMain::gotoNextTimeFrame()
 {
-    std::cout << "Going to next tiem frame" << std::endl;
+    std::cout << "Going to next time frame" << std::endl;
     for (std::string& p : orderBook.getKnowProducts())
     {
         std::cout << "matching " << p << std::endl;
