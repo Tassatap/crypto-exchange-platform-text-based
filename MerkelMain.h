@@ -3,6 +3,7 @@
 #include <vector>
 #include "OrderBookEntry.h"
 #include "OrderBook.h"
+#include "Wallet.h"
 
 class MerkelMain
 {
@@ -24,6 +25,9 @@ private:
     std::string currentTime;
 
     OrderBook orderBook{"Crypto_trading_data.csv"};
+
+    Wallet wallet;
+
 public:
 	MerkelMain();
     /** Call this to start the sim*/
